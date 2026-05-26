@@ -602,3 +602,5 @@ app.listen(PORT, () => {
     console.log(`🔗 Visitez : http://localhost:${PORT}`);
     console.log(`===================================================`);
 });
+
+module.exports = app;
