@@ -25,15 +25,15 @@ let pgClient = null;
 let sqliteDb = null;
 
 if (process.env.DATABASE_URL) {
-    console.log("🔌 Détection de DATABASE_URL. Connexion à PostgreSQL...");
-    const { Client } = require('pg');
-    pgClient = new Client({
+    console.log("🔌 Détection de DATABASE_URL. Connexion à PostgreSQL via Pool...");
+    const { Pool } = require('pg');
+    pgClient = new Pool({
         connectionString: process.env.DATABASE_URL,
         ssl: {
             rejectUnauthorized: false // Requis pour Render, Supabase, Neon
         }
     });
-    pgClient.connect()
+    pgClient.query('SELECT NOW()')
         .then(() => {
             console.log("✅ Connecté avec succès à PostgreSQL.");
             isPostgres = true;
