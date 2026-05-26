@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Réservez vos places pour la soirée piscine la plus exclusive de l'été. Pinky Party - 1er Juillet 2026. Bizerte, Tunisie.">
+    <title>Pinky Party - Pool Party Exclusive | Réservations</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Outfit:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Immersive 3D Parallax Background -->
+    <div class="bg-3d-container" id="bg-3d-container"></div>
+
+    <!-- Hidden YouTube Playlist Player -->
+    <div id="yt-player" style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; left: -9999px;"></div>
+
+    <!-- 3D WELCOME GATEWAY SCREEN (Required for autoplay music approval + premium intro) -->
+    <div id="welcome-gate" class="welcome-gate">
+        <div class="welcome-card glass-3d">
+            <h1 class="welcome-title"><span class="pink">PINKY</span> <span class="white">PARTY</span></h1>
+            <p class="welcome-subtitle">POOL PARTY EXPERIENCE • 1er JUILLET</p>
+            <div class="welcome-3d-visual">
+                <div class="ring ring-1"></div>
+                <div class="ring ring-2"></div>
+                <img src="flamingo.png" class="flamingo-logo-img" alt="Flamingo Floaty">
+            </div>
+            <button id="btn-enter" class="btn-enter-experience">
+                <span>ENTRER & ACTIVER LE SON 🔊</span>
+            </button>
+            <p class="music-note">Afro House Session activée à l'entrée</p>
+        </div>
+    </div>
+
+
+
+    <!-- Visualizer / Music Play floating banner -->
+    <div class="music-floating-btn" id="music-btn">
+        <div class="music-visualizer paused">
+            <span class="bar bar-1"></span>
+            <span class="bar bar-2"></span>
+            <span class="bar bar-3"></span>
+            <span class="bar bar-4"></span>
+        </div>
+        <div class="music-text">
+            <span class="music-status">Play Music 🎵</span>
+            <span class="music-genre">Afro House</span>
+        </div>
+    </div>
+
+    <!-- Main 16:9 Aspect Ratio Page Wrapper -->
+    <div class="event-page-wrapper hidden-content" id="main-content-wrapper">
+        <div class="event-container-3d" id="tilt-container">
+            <!-- Dynamic 3D Club Lasers -->
+            <div class="laser-beam"></div>
+            <div class="laser-beam-pink"></div>
+
+            <!-- Coming Soon Overlay -->
+            <div class="coming-soon-overlay">
+                <div class="cs-tag">🔥 ÉVÉNEMENT</div>
+                <div class="cs-main">
+                    <span class="cs-word">COMING</span>
+                    <span class="cs-word cs-soon">SOON</span>
+                </div>
+                <div class="cs-date-badge">
+                    <i class="fa-solid fa-calendar-star"></i>
+                    <span>1er Juillet 2026</span>
+                </div>
+                <div class="cs-countdown" id="cs-countdown">
+                    <div class="cs-count-unit">
+                        <span class="cs-num" id="cd-days">--</span>
+                        <span class="cs-label">Jours</span>
+                    </div>
+                    <div class="cs-sep">:</div>
+                    <div class="cs-count-unit">
+                        <span class="cs-num" id="cd-hours">--</span>
+                        <span class="cs-label">Heures</span>
+                    </div>
+                    <div class="cs-sep">:</div>
+                    <div class="cs-count-unit">
+                        <span class="cs-num" id="cd-mins">--</span>
+                        <span class="cs-label">Minutes</span>
+                    </div>
+                </div>
+                <div class="cs-location">
+                    <i class="fa-solid fa-location-dot"></i> Bizerte, Tunisie
+                </div>
+            </div>
+
+            <!-- Hidden header on desktop, visible on mobile to keep branding -->
+            <header class="mobile-header">
+                <div class="logo-container">
+                    <span class="logo-pink">PINKY</span><span class="logo-white">PARTY</span>
+                </div>
+            </header>
+
+            <!-- BOOKING CONTAINER (positioned exactly inside the gold frame on desktop) -->
+            <div class="booking-container-overlay" id="booking-container-overlay">
+                <div class="booking-card-inner glass-form-3d" id="booking-card-content">
+
+                    <!-- STEP 1: FORM -->
+                    <form id="booking-form" class="booking-form-compact">
+                        <h2 class="form-title">RÉSERVATION</h2>
+                        <p class="form-subtitle">1 Juillet • Bizerte • 80 DT</p>
+
+                        <!-- Dynamic Ticket Capacity Limiter -->
+                        <div class="ticket-limiter-compact">
+                            <div class="limiter-text-compact">
+                                <span>Places restantes :</span>
+                                <strong id="places-left">-- / 50</strong>
+                            </div>
+                            <div class="limiter-bar-container-compact">
+                                <div class="limiter-bar-fill-compact" id="places-bar-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="input-group-compact">
+                            <label for="user-fullname"><i class="fa-regular fa-user"></i> Nom & Prénom</label>
+                            <input type="text" id="user-fullname" placeholder="Ex: Mohamed Ali" required minlength="4">
+                        </div>
+
+                        <div class="input-group-compact">
+                            <label for="user-phone"><i class="fa-solid fa-phone"></i> Numéro de Téléphone</label>
+                            <div class="phone-input-wrapper-compact">
+                                <span class="phone-prefix-compact">+216</span>
+                                <input type="tel" id="user-phone" placeholder="92711794" required pattern="[0-9]{8}"
+                                    title="Veuillez saisir un numéro à 8 chiffres">
+                            </div>
+                        </div>
+
+                        <div class="input-group-compact">
+                            <label for="user-instagram"><i class="fa-brands fa-instagram"></i> Compte Instagram</label>
+                            <input type="text" id="user-instagram" placeholder="Ex: @mon_compte" required minlength="3">
+                        </div>
+
+                        <div class="input-group-compact">
+                            <label for="ticket-qty"><i class="fa-solid fa-ticket"></i> Nombre de Places</label>
+                            <select id="ticket-qty" required>
+                                <option value="1" selected>1 Place (80 DT)</option>
+                                <option value="2">2 Places (160 DT)</option>
+                                <option value="3">3 Places (240 DT)</option>
+                                <option value="4">4 Places (320 DT)</option>
+                                <option value="5">5 Places (400 DT)</option>
+                            </select>
+                        </div>
+
+                        <div class="price-line-compact">
+                            <span>Total à payer:</span>
+                            <span class="price-value-compact" id="total-price">80 DT</span>
+                        </div>
+
+                        <button type="submit" class="btn-compact-submit" id="btn-submit">
+                            <span>PASSER LA RÉSERVATION & PAYER (Cash / e-Dinar)</span>
+                        </button>
+                    </form>
+
+                    <!-- STEP 2: SUCCESS VIEW (Hidden by default) -->
+                    <div id="booking-success" class="booking-success-compact hidden">
+                        <div class="success-icon-compact">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <h3 class="success-title">RÉSERVÉ !</h3>
+
+                        <div class="success-details-compact">
+                            <p><strong>Code :</strong> <span class="badge-code-compact"
+                                    id="success-code">PINK-1234</span></p>
+                            <p><strong>Places :</strong> <span id="success-qty">1</span></p>
+                            <p><strong>Total :</strong> <span id="success-total">80 DT</span></p>
+                        </div>
+
+                        <!-- Unique Client QR Code -->
+                        <div class="success-qr-container" style="display: flex; flex-direction: column; align-items: center; margin: 15px 0; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                            <p style="font-size: 0.75rem; font-weight: bold; color: var(--accent-gold); margin-bottom: 8px;">Votre QR Code d'entrée — À scanner à l'entrée</p>
+                            <div id="qrcode" style="background: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); display: inline-block;"></div>
+                        </div>
+
+                        <div class="payment-instructions-compact">
+                            <h4>Règlement (e-Dinar / Cash)</h4>
+                            <p>• <strong>e-Dinar / D17 :</strong> Envoyez au <strong>92 711 794</strong></p>
+                            <p>• <strong>Cash (espèces) :</strong> Contactez-nous sur WhatsApp</p>
+                            <p class="small-note">Puis envoyez la capture d'écran sur WhatsApp.</p>
+                            <p class="email-note"><i class="fa-regular fa-envelope"></i> Contact mail:
+                                check.7amouda@gmail.com</p>
+                        </div>
+
+                        <div class="success-actions-compact" style="display: flex; flex-direction: column; gap: 6px;">
+                            <p style="font-size: 0.6rem; color: var(--text-muted); text-align: center; margin-bottom: 2px; width: 100%;">Envoyez votre reçu à l'un de nos organisateurs :</p>
+                            <a href="#" target="_blank" class="btn-compact-whatsapp" id="btn-success-whatsapp-1">
+                                <i class="fa-brands fa-whatsapp"></i> WhatsApp Hamouda +92711
+                            </a>
+                            <a href="#" target="_blank" class="btn-compact-whatsapp" id="btn-success-whatsapp-2" style="background: #00d2ff; box-shadow: 0 4px 10px rgba(0, 210, 255, 0.2);">
+                                <i class="fa-brands fa-whatsapp"></i> WhatsApp Bicha +58
+                            </a>
+                            <button class="btn-compact-reset" id="btn-reset">
+                                Autre inscription
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN MODAL (Hidden by default) -->
+        <div class="modal-backdrop hidden" id="admin-modal">
+            <div class="modal-content glass">
+                <div class="modal-header">
+                    <h2>🔑 Dashboard Organisateur</h2>
+                    <button class="btn-close" id="admin-close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Password section -->
+                    <div id="admin-auth-section" class="admin-auth-section">
+                        <p>Entrez le mot de passe pour accéder à la liste des réservations :</p>
+                        <div class="input-row">
+                            <input type="password" id="admin-password" placeholder="Mot de passe">
+                            <button class="btn btn-primary" id="btn-admin-auth">Valider</button>
+                        </div>
+                        <p class="error-msg hidden" id="auth-error">Mot de passe incorrect !</p>
+                    </div>
+
+                    <!-- Bookings dashboard (hidden until auth) -->
+                    <div id="admin-dashboard-section" class="admin-dashboard-section hidden">
+                        <div class="dashboard-controls">
+                            <div class="search-wrapper">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="search-input"
+                                    placeholder="Rechercher un nom, numéro ou Instagram...">
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" id="btn-export-csv">
+                                    <i class="fa-solid fa-file-export"></i> Exporter CSV
+                                </button>
+                                <button class="btn btn-danger" id="btn-clear-all">
+                                    <i class="fa-solid fa-trash"></i> Tout effacer
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="bookings-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Code</th>
+                                        <th>Nom</th>
+                                        <th>Téléphone</th>
+                                        <th>Instagram</th>
+                                        <th>Places</th>
+                                        <th>Total</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookings-list">
+                                    <!-- Dynamic rows loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>&copy; 2026 Pinky Party. Tous droits réservés.</p>
+            <p class="contact-email">Email : <a href="mailto:check.7amouda@gmail.com"
+                    style="color: var(--accent-gold); text-decoration: none;">check.7amouda@gmail.com</a></p>
+            <p class="admin-link-wrapper"><a href="#" id="link-admin"><i class="fa-solid fa-lock"></i> Espace
+                    Organisateur</a></p>
+        </footer>
+    </div>
+
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Script file -->
+    <script src="script.js"></script>
+</body>
+
+</html>
