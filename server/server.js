@@ -152,34 +152,18 @@ function dbRun(query, params = []) {
             sqliteDb.run(query, params, function(err) {
                 if (err) reject(err);
                 else resolve({ lastID: this.lastID, changes: this.changes });
-            });
-        }
-    });
-}
+// ==========================================
+// FONCTION D'ENVOI TELEGRAM (Notifications)
+// ==========================================
+async function sendTelegramNotification(booking) {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
 
-// ==========================================
-// FONCTION D'ENVOI WHATSAPP (CallMeBot)
-// ==========================================
-// ==========================================
-// FONCTIONS D'ENVOI WHATSAPP (META CLOUD API & CALLMEBOT)
-// ==========================================
-
-// 1. WhatsApp Cloud API Officielle (Meta)
-async function sendWhatsAppCloudAPINotification(booking) {
-    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID || '1171876858088077';
-    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-
-    if (!accessToken) {
-        console.log("⚠️ Notification WhatsApp Cloud API ignorée (WHATSAPP_ACCESS_TOKEN non configuré).");
+    if (!token || !chatId) {
+        console.log("⚠️ Notification Telegram ignorée (TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID non configurés).");
         return;
     }
 
-    if (accessToken.startsWith('__n8n_BLANK_VALUE')) {
-        console.warn("⚠️ Le token d'accès WhatsApp fourni est un placeholder n8n. Veuillez le remplacer par la vraie clé dans votre fichier .env ou sur Render.");
-        return;
-    }
-
-    // Message pré-formaté pour WhatsApp Cloud API
     const messageText = 
 `🎉 *Nouvelle réservation Pinky Party* 🎉
 
@@ -188,113 +172,33 @@ async function sendWhatsAppCloudAPINotification(booking) {
 📸 *Instagram* : ${booking.instagram}
 🎟 *Places* : ${booking.places}
 💰 *Total* : ${booking.total}
-🔑 *Code* : ${booking.code}
+🔑 *Code* : \`${booking.code}\`
+
+🔗 *Lien du Ticket / QR Code* : https://pinky-party.vercel.app/ticket/${booking.code}
 
 *Date* : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
 
-    const recipients = ['21692711794', '21658520774']; // Hamouda et Bicha
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: messageText,
+                parse_mode: 'Markdown'
+            })
+        });
 
-    for (const to of recipients) {
-        const url = `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`;
-        
-        const payload = {
-            messaging_product: "whatsapp",
-            recipient_type: "individual",
-            to: to,
-            type: "text",
-            text: {
-                preview_url: false,
-                body: messageText
-            }
-        };
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const responseData = await response.json();
-            if (response.ok) {
-                console.log(`✅ Notification WhatsApp Cloud API envoyée avec succès à ${to}`);
-            } else {
-                console.warn(`❌ Échec de notification WhatsApp Cloud API pour ${to} :`, JSON.stringify(responseData));
-            }
-        } catch (error) {
-            console.error(`❌ Erreur lors de l'envoi WhatsApp Cloud API à ${to} :`, error.message);
+        const responseData = await response.json();
+        if (response.ok && responseData.ok) {
+            console.log(`✅ Notification Telegram envoyée avec succès !`);
+        } else {
+            console.warn(`❌ Échec de notification Telegram :`, JSON.stringify(responseData));
         }
+    } catch (error) {
+        console.error(`❌ Erreur lors de l'envoi de la notification Telegram :`, error.message);
     }
-}
-
-// 2. CallMeBot WhatsApp (Canal de secours gratuit)
-async function sendWhatsAppNotification(booking) {
-    // Déclencher aussi l'envoi WhatsApp Cloud API
-    sendWhatsAppCloudAPINotification(booking).catch(err => {
-        console.error("Erreur de notification WhatsApp Cloud API :", err.message);
-    });
-
-    // Générer les informations pour le QR Code
-    const nameParts = booking.fullname.split(' ');
-    const prenom = nameParts[0] || '';
-    const nom = nameParts.slice(1).join(' ') || booking.fullname;
-    
-    const qrData = {
-        "nom": nom,
-        "prenom": prenom,
-        "telephone": booking.phone,
-        "code": booking.code,
-        "places": parseInt(booking.places),
-        "date": "1er Juillet 2026 - 21h00"
-    };
-    
-    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(JSON.stringify(qrData))}`;
-    
-    // Message pré-formaté pour WhatsApp CallMeBot
-    const messageText = 
-`🎉 *Nouvelle réservation Pinky Party* 🎉
-
-👤 *Nom* : ${booking.fullname}
-📞 *Téléphone* : ${booking.phone}
-📸 *Instagram* : ${booking.instagram}
-🎟 *Places* : ${booking.places}
-💰 *Total* : ${booking.total}
-🔑 *Code* : ${booking.code}
-
-🔗 *QR Code d'entrée* : ${qrImageUrl}
-
-*Date* : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
-
-    const encodedMsg = encodeURIComponent(messageText);
-
-    // CallMeBot configuration depuis le fichier .env
-    const apikeyHamouda = process.env.CALLMEBOT_APIKEY_HAMOUDA; // pour le +21692711794 (Hamouda)
-    const apikeyBicha = process.env.CALLMEBOT_APIKEY_BICHA;     // pour le +21658520774 (Bicha)
-
-    const apiConfigs = [
-        { name: 'Hamouda', phone: '21692711794', apikey: apikeyHamouda },
-        { name: 'Bicha', phone: '21658520774', apikey: apikeyBicha }
-    ];
-
-    for (const config of apiConfigs) {
-        if (!config.apikey) {
-            console.log(`⚠️ Notification ignorée pour ${config.name} (Pas de clé d'API CallMeBot configurée).`);
-            continue;
-        }
-
-        const url = `https://api.callmebot.com/whatsapp.php?phone=${config.phone}&text=${encodedMsg}&apikey=${config.apikey}`;
-        
-        try {
-            const response = await fetch(url);
-            if (response.ok) {
-                console.log(`✅ Notification WhatsApp envoyée avec succès à ${config.name}`);
-            } else {
-                console.warn(`❌ Échec de notification pour ${config.name} (Statut : ${response.status})`);
-            }
-        } catch (error) {
+}ror) {
             console.error(`❌ Erreur lors de l'envoi de la notification WhatsApp à ${config.name} : `, error.message);
         }
     }
@@ -373,9 +277,9 @@ app.post('/api/reserve', async (req, res) => {
             total: totalAmount
         };
 
-        // Déclencher l'envoi WhatsApp en arrière-plan
-        sendWhatsAppNotification(newBooking).catch(err => {
-            console.error("Erreur de notification WhatsApp :", err.message);
+        // Déclencher l'envoi Telegram en arrière-plan
+        sendTelegramNotification(newBooking).catch(err => {
+            console.error("Erreur de notification Telegram :", err.message);
         });
 
         // Répondre au client
