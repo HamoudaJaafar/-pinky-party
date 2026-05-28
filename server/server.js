@@ -230,6 +230,18 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// Diagnostics de configuration Vercel (Sécurisé)
+app.get('/api/test-env', (req, res) => {
+    const url = process.env.DATABASE_URL;
+    res.json({
+        hasDatabaseUrl: !!url,
+        length: url ? url.length : 0,
+        startsWith: url ? url.substring(0, 15) : '',
+        hasTelegramToken: !!process.env.TELEGRAM_BOT_TOKEN,
+        hasTelegramChatId: !!process.env.TELEGRAM_CHAT_ID
+    });
+});
+
 // 2. Soumettre une nouvelle réservation
 app.post('/api/reserve', async (req, res) => {
     const { fullname, phone, instagram, places } = req.body;
