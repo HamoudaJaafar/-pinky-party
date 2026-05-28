@@ -26,6 +26,7 @@ let sqliteDb = null;
 
 if (process.env.DATABASE_URL) {
     console.log("🔌 Détection de DATABASE_URL. Connexion à PostgreSQL via Pool...");
+    isPostgres = true; // Activé de manière synchrone pour éviter tout conflit de démarrage
     const { Pool } = require('pg');
     pgClient = new Pool({
         connectionString: process.env.DATABASE_URL,
@@ -36,7 +37,6 @@ if (process.env.DATABASE_URL) {
     pgClient.query('SELECT NOW()')
         .then(() => {
             console.log("✅ Connecté avec succès à PostgreSQL.");
-            isPostgres = true;
             const createTableQuery = `
                 CREATE TABLE IF NOT EXISTS reservations (
                     id SERIAL PRIMARY KEY,
