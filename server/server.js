@@ -149,23 +149,23 @@ function dbRun(query, params = []) {
                 .then(res => resolve({ lastID: null, changes: res.rowCount }))
                 .catch(err => reject(err));
         } else {
-            sqliteDb.run(query, params, function(err) {
+            sqliteDb.run(query, params, function (err) {
                 if (err) reject(err);
                 else resolve({ lastID: this.lastID, changes: this.changes });
-// ==========================================
-// FONCTION D'ENVOI TELEGRAM (Notifications)
-// ==========================================
-async function sendTelegramNotification(booking) {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
+                // ==========================================
+                // FONCTION D'ENVOI TELEGRAM (Notifications)
+                // ==========================================
+                async function sendTelegramNotification(booking) {
+                    const token = process.env.TELEGRAM_BOT_TOKEN;
+                    const chatId = process.env.TELEGRAM_CHAT_ID;
 
-    if (!token || !chatId) {
-        console.log("⚠️ Notification Telegram ignorée (TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID non configurés).");
-        return;
-    }
+                    if (!token || !chatId) {
+                        console.log("⚠️ Notification Telegram ignorée (TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID non configurés).");
+                        return;
+                    }
 
-    const messageText = 
-`🎉 *Nouvelle réservation Pinky Party* 🎉
+                    const messageText =
+                        `🎉 *Nouvelle réservation Pinky Party* 🎉
 
 👤 *Nom* : ${booking.fullname}
 📞 *Téléphone* : ${booking.phone}
@@ -178,231 +178,231 @@ async function sendTelegramNotification(booking) {
 
 *Date* : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
 
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: messageText,
-                parse_mode: 'Markdown'
-            })
-        });
+                    try {
+                        const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: chatId,
+                                text: messageText,
+                                parse_mode: 'Markdown'
+                            })
+                        });
 
-        const responseData = await response.json();
-        if (response.ok && responseData.ok) {
-            console.log(`✅ Notification Telegram envoyée avec succès !`);
-        } else {
-            console.warn(`❌ Échec de notification Telegram :`, JSON.stringify(responseData));
-        }
-    } catch (error) {
-        console.error(`❌ Erreur lors de l'envoi de la notification Telegram :`, error.message);
-    }
-}
+                        const responseData = await response.json();
+                        if (response.ok && responseData.ok) {
+                            console.log(`✅ Notification Telegram envoyée avec succès !`);
+                        } else {
+                            console.warn(`❌ Échec de notification Telegram :`, JSON.stringify(responseData));
+                        }
+                    } catch (error) {
+                        console.error(`❌ Erreur lors de l'envoi de la notification Telegram :`, error.message);
+                    }
+                }
 
-// ==========================================
-// API ENDPOINTS (ROUTES)
-// ==========================================
+                // ==========================================
+                // API ENDPOINTS (ROUTES)
+                // ==========================================
 
-// Route directe et intuitive pour accéder au Dashboard Admin
-// Route pour servir le front-end
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-});
+                // Route directe et intuitive pour accéder au Dashboard Admin
+                // Route pour servir le front-end
+                app.get('/', (req, res) => {
+                    res.sendFile(path.join(__dirname, '../public/index.html'));
+                });
 
-app.get('/api/ping', (req, res) => { res.json({ ok: true }); });
+                app.get('/api/ping', (req, res) => { res.json({ ok: true }); });
 
-app.get('/admin', (req, res) => {
-    res.redirect('/#admin');
-});
+                app.get('/admin', (req, res) => {
+                    res.redirect('/#admin');
+                });
 
-// 1. Récupérer les statistiques de capacité
-app.get('/api/stats', async (req, res) => {
-    try {
-        const row = await dbGet("SELECT SUM(places) as totalbooked FROM reservations");
-        const totalBooked = parseInt(row ? (row.totalbooked || row.totalBooked || 0) : 0);
-        const remaining = Math.max(0, MAX_PLACES - totalBooked);
-        res.json({
-            maxPlaces: MAX_PLACES,
-            totalBooked: totalBooked,
-            remaining: remaining
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+                // 1. Récupérer les statistiques de capacité
+                app.get('/api/stats', async (req, res) => {
+                    try {
+                        const row = await dbGet("SELECT SUM(places) as totalbooked FROM reservations");
+                        const totalBooked = parseInt(row ? (row.totalbooked || row.totalBooked || 0) : 0);
+                        const remaining = Math.max(0, MAX_PLACES - totalBooked);
+                        res.json({
+                            maxPlaces: MAX_PLACES,
+                            totalBooked: totalBooked,
+                            remaining: remaining
+                        });
+                    } catch (err) {
+                        res.status(500).json({ error: err.message });
+                    }
+                });
 
-// Diagnostics de configuration Vercel (Sécurisé)
-app.get('/api/test-env', (req, res) => {
-    const url = process.env.DATABASE_URL;
-    res.json({
-        hasDatabaseUrl: !!url,
-        length: url ? url.length : 0,
-        startsWith: url ? url.substring(0, 15) : '',
-        hasTelegramToken: !!process.env.TELEGRAM_BOT_TOKEN,
-        hasTelegramChatId: !!process.env.TELEGRAM_CHAT_ID
-    });
-});
+                // Diagnostics de configuration Vercel (Sécurisé)
+                app.get('/api/test-env', (req, res) => {
+                    const url = process.env.DATABASE_URL;
+                    res.json({
+                        hasDatabaseUrl: !!url,
+                        length: url ? url.length : 0,
+                        startsWith: url ? url.substring(0, 15) : '',
+                        hasTelegramToken: !!process.env.TELEGRAM_BOT_TOKEN,
+                        hasTelegramChatId: !!process.env.TELEGRAM_CHAT_ID
+                    });
+                });
 
-// 2. Soumettre une nouvelle réservation
-app.post('/api/reserve', async (req, res) => {
-    const { fullname, phone, instagram, places } = req.body;
-    
-    if (!fullname || !phone || !instagram || !places) {
-        return res.status(400).json({ error: "Tous les champs sont requis." });
-    }
+                // 2. Soumettre une nouvelle réservation
+                app.post('/api/reserve', async (req, res) => {
+                    const { fullname, phone, instagram, places } = req.body;
 
-    const ticketQty = parseInt(places);
-    const pricePerTicket = 80;
-    const totalAmount = `${ticketQty * pricePerTicket} DT`;
+                    if (!fullname || !phone || !instagram || !places) {
+                        return res.status(400).json({ error: "Tous les champs sont requis." });
+                    }
 
-    try {
-        // Vérifier la capacité restante
-        const row = await dbGet("SELECT SUM(places) as totalbooked FROM reservations");
-        const totalBooked = parseInt(row ? (row.totalbooked || row.totalBooked || 0) : 0);
-        const remaining = MAX_PLACES - totalBooked;
+                    const ticketQty = parseInt(places);
+                    const pricePerTicket = 80;
+                    const totalAmount = `${ticketQty * pricePerTicket} DT`;
 
-        if (ticketQty > remaining) {
-            return res.status(400).json({ error: `Désolé, il ne reste que ${remaining} place(s) disponible(s).` });
-        }
+                    try {
+                        // Vérifier la capacité restante
+                        const row = await dbGet("SELECT SUM(places) as totalbooked FROM reservations");
+                        const totalBooked = parseInt(row ? (row.totalbooked || row.totalBooked || 0) : 0);
+                        const remaining = MAX_PLACES - totalBooked;
 
-        // Générer le code unique
-        const randomNum = Math.floor(1000 + Math.random() * 9000);
-        const bookingCode = `PINK-${randomNum}`;
+                        if (ticketQty > remaining) {
+                            return res.status(400).json({ error: `Désolé, il ne reste que ${remaining} place(s) disponible(s).` });
+                        }
 
-        // Standardiser l'arobase Instagram et le format de téléphone
-        const igHandle = instagram.startsWith('@') ? instagram : `@${instagram}`;
-        const phoneFormatted = phone.startsWith('+216') ? phone : `+216 ${phone}`;
+                        // Générer le code unique
+                        const randomNum = Math.floor(1000 + Math.random() * 9000);
+                        const bookingCode = `PINK-${randomNum}`;
 
-        // Enregistrer en base
-        const sql = `INSERT INTO reservations (code, fullname, phone, instagram, places, total, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')`;
-        await dbRun(sql, [bookingCode, fullname, phoneFormatted, igHandle, ticketQty, totalAmount]);
+                        // Standardiser l'arobase Instagram et le format de téléphone
+                        const igHandle = instagram.startsWith('@') ? instagram : `@${instagram}`;
+                        const phoneFormatted = phone.startsWith('+216') ? phone : `+216 ${phone}`;
 
-        const newBooking = {
-            code: bookingCode,
-            fullname,
-            phone: phoneFormatted,
-            instagram: igHandle,
-            places: ticketQty,
-            total: totalAmount
-        };
+                        // Enregistrer en base
+                        const sql = `INSERT INTO reservations (code, fullname, phone, instagram, places, total, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')`;
+                        await dbRun(sql, [bookingCode, fullname, phoneFormatted, igHandle, ticketQty, totalAmount]);
 
-        // Déclencher l'envoi Telegram en arrière-plan
-        sendTelegramNotification(newBooking).catch(err => {
-            console.error("Erreur de notification Telegram :", err.message);
-        });
+                        const newBooking = {
+                            code: bookingCode,
+                            fullname,
+                            phone: phoneFormatted,
+                            instagram: igHandle,
+                            places: ticketQty,
+                            total: totalAmount
+                        };
 
-        // Répondre au client
-        res.status(201).json({
-            success: true,
-            booking: newBooking
-        });
-    } catch (err) {
-        console.error("Erreur d'inscription :", err.message);
-        res.status(500).json({ error: "Erreur lors de l'enregistrement de la réservation." });
-    }
-});
+                        // Déclencher l'envoi Telegram en arrière-plan
+                        sendTelegramNotification(newBooking).catch(err => {
+                            console.error("Erreur de notification Telegram :", err.message);
+                        });
 
-// 3. Authentification Admin Dashboard
-app.post('/api/admin/auth', (req, res) => {
-    const { password } = req.body;
-    if (password === 'pinky2026') {
-        res.json({ success: true });
-    } else {
-        res.status(401).json({ success: false, error: "Mot de passe incorrect." });
-    }
-});
+                        // Répondre au client
+                        res.status(201).json({
+                            success: true,
+                            booking: newBooking
+                        });
+                    } catch (err) {
+                        console.error("Erreur d'inscription :", err.message);
+                        res.status(500).json({ error: "Erreur lors de l'enregistrement de la réservation." });
+                    }
+                });
 
-// 4. Liste de toutes les réservations (Pour l'admin authentifié)
-app.get('/api/bookings', async (req, res) => {
-    try {
-        const rows = await dbAll("SELECT * FROM reservations ORDER BY created_at DESC");
-        const mapped = rows.map(r => ({
-            code: r.code,
-            // Convertir le timestamp UTC en date lisible en local
-            date: new Date(r.created_at).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-            name: r.fullname,
-            phone: r.phone,
-            instagram: r.instagram,
-            qty: r.places,
-            total: r.total,
-            status: r.status
-        }));
-        res.json(mapped);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+                // 3. Authentification Admin Dashboard
+                app.post('/api/admin/auth', (req, res) => {
+                    const { password } = req.body;
+                    if (password === 'pinky2026') {
+                        res.json({ success: true });
+                    } else {
+                        res.status(401).json({ success: false, error: "Mot de passe incorrect." });
+                    }
+                });
 
-// 5. Basculer le statut d'une réservation (Payé / En attente)
-app.post('/api/bookings/toggle-status', async (req, res) => {
-    const { code } = req.body;
-    if (!code) return res.status(400).json({ error: "Code requis." });
+                // 4. Liste de toutes les réservations (Pour l'admin authentifié)
+                app.get('/api/bookings', async (req, res) => {
+                    try {
+                        const rows = await dbAll("SELECT * FROM reservations ORDER BY created_at DESC");
+                        const mapped = rows.map(r => ({
+                            code: r.code,
+                            // Convertir le timestamp UTC en date lisible en local
+                            date: new Date(r.created_at).toLocaleDateString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                            name: r.fullname,
+                            phone: r.phone,
+                            instagram: r.instagram,
+                            qty: r.places,
+                            total: r.total,
+                            status: r.status
+                        }));
+                        res.json(mapped);
+                    } catch (err) {
+                        res.status(500).json({ error: err.message });
+                    }
+                });
 
-    try {
-        const row = await dbGet("SELECT status FROM reservations WHERE code = ?", [code]);
-        if (!row) return res.status(404).json({ error: "Réservation introuvable." });
+                // 5. Basculer le statut d'une réservation (Payé / En attente)
+                app.post('/api/bookings/toggle-status', async (req, res) => {
+                    const { code } = req.body;
+                    if (!code) return res.status(400).json({ error: "Code requis." });
 
-        const newStatus = row.status === 'paid' ? 'pending' : 'paid';
-        await dbRun("UPDATE reservations SET status = ? WHERE code = ?", [newStatus, code]);
-        res.json({ success: true, newStatus });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+                    try {
+                        const row = await dbGet("SELECT status FROM reservations WHERE code = ?", [code]);
+                        if (!row) return res.status(404).json({ error: "Réservation introuvable." });
 
-// 6. Supprimer une réservation
-app.delete('/api/bookings/:code', async (req, res) => {
-    const { code } = req.params;
-    try {
-        await dbRun("DELETE FROM reservations WHERE code = ?", [code]);
-        res.json({ success: true, message: `Réservation ${code} supprimée.` });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+                        const newStatus = row.status === 'paid' ? 'pending' : 'paid';
+                        await dbRun("UPDATE reservations SET status = ? WHERE code = ?", [newStatus, code]);
+                        res.json({ success: true, newStatus });
+                    } catch (err) {
+                        res.status(500).json({ error: err.message });
+                    }
+                });
 
-// 7. Tout effacer (Reset de la base)
-app.post('/api/bookings/clear-all', async (req, res) => {
-    try {
-        await dbRun("DELETE FROM reservations");
-        res.json({ success: true, message: "Toutes les réservations ont été supprimées." });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+                // 6. Supprimer une réservation
+                app.delete('/api/bookings/:code', async (req, res) => {
+                    const { code } = req.params;
+                    try {
+                        await dbRun("DELETE FROM reservations WHERE code = ?", [code]);
+                        res.json({ success: true, message: `Réservation ${code} supprimée.` });
+                    } catch (err) {
+                        res.status(500).json({ error: err.message });
+                    }
+                });
 
-// 8. Visualiser le ticket et le QR Code pour un code donné
-app.get('/ticket/:code', async (req, res) => {
-    try {
-        const { code } = req.params;
-        const row = await dbGet("SELECT * FROM reservations WHERE code = ?", [code]);
-        if (!row) {
-            return res.status(404).json({ error: "Ticket introuvable" });
-        }
-        // For now, return reservation data as JSON instead of HTML.
-        res.json({
-            code: row.code,
-            fullname: row.fullname,
-            phone: row.phone,
-            instagram: row.instagram,
-            places: row.places,
-            total: row.total,
-            status: row.status
-        });
-    } catch (err) {
-        console.error("Erreur serveur ticket :", err.message);
-        res.status(500).json({ error: "Erreur serveur" });
-    }
-});
+                // 7. Tout effacer (Reset de la base)
+                app.post('/api/bookings/clear-all', async (req, res) => {
+                    try {
+                        await dbRun("DELETE FROM reservations");
+                        res.json({ success: true, message: "Toutes les réservations ont été supprimées." });
+                    } catch (err) {
+                        res.status(500).json({ error: err.message });
+                    }
+                });
+
+                // 8. Visualiser le ticket et le QR Code pour un code donné
+                app.get('/ticket/:code', async (req, res) => {
+                    try {
+                        const { code } = req.params;
+                        const row = await dbGet("SELECT * FROM reservations WHERE code = ?", [code]);
+                        if (!row) {
+                            return res.status(404).json({ error: "Ticket introuvable" });
+                        }
+                        // For now, return reservation data as JSON instead of HTML.
+                        res.json({
+                            code: row.code,
+                            fullname: row.fullname,
+                            phone: row.phone,
+                            instagram: row.instagram,
+                            places: row.places,
+                            total: row.total,
+                            status: row.status
+                        });
+                    } catch (err) {
+                        console.error("Erreur serveur ticket :", err.message);
+                        res.status(500).json({ error: "Erreur serveur" });
+                    }
+                });
 
 
-// Démarrage du serveur
-app.listen(PORT, () => {
-    console.log(`===================================================`);
-    console.log(`🚀 SERVEUR PINKY PARTY DÉMARRÉ SUR LE PORT ${PORT}`);
-    console.log(`🔗 Visitez : http://localhost:${PORT}`);
-    console.log(`===================================================`);
-});
+                // Démarrage du serveur
+                app.listen(PORT, () => {
+                    console.log(`===================================================`);
+                    console.log(`🚀 SERVEUR PINKY PARTY DÉMARRÉ SUR LE PORT ${PORT}`);
+                    console.log(`🔗 Visitez : http://localhost:${PORT}`);
+                    console.log(`===================================================`);
+                });
 
-module.exports = app;
+                module.exports = app;
