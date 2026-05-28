@@ -198,10 +198,6 @@ async function sendTelegramNotification(booking) {
     } catch (error) {
         console.error(`❌ Erreur lors de l'envoi de la notification Telegram :`, error.message);
     }
-}ror) {
-            console.error(`❌ Erreur lors de l'envoi de la notification WhatsApp à ${config.name} : `, error.message);
-        }
-    }
 }
 
 // ==========================================
