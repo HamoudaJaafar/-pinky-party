@@ -210,6 +210,8 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
+app.get('/api/ping', (req, res) => { res.json({ ok: true }); });
+
 app.get('/admin', (req, res) => {
     res.redirect('/#admin');
 });
@@ -372,140 +374,28 @@ app.post('/api/bookings/clear-all', async (req, res) => {
 
 // 8. Visualiser le ticket et le QR Code pour un code donné
 app.get('/ticket/:code', async (req, res) => {
-    const { code } = req.params;
     try {
+        const { code } = req.params;
         const row = await dbGet("SELECT * FROM reservations WHERE code = ?", [code]);
         if (!row) {
-            return res.status(404).send("<h1 style='color: white; text-align: center; margin-top: 50px;'>Ticket introuvable</h1>");
+            return res.status(404).json({ error: "Ticket introuvable" });
         }
-        
-        const nameParts = row.fullname.split(' ');
-        const prenom = nameParts[0] || '';
-        const nom = nameParts.slice(1).join(' ') || row.fullname;
-        
-        const qrData = {
-            "nom": nom,
-            "prenom": prenom,
-            "telephone": row.phone,
-            "code": row.code,
-            "places": parseInt(row.places),
-            "date": "1er Juillet 2026 - 21h00"
-        };
-        
-        const qrDataString = encodeURIComponent(JSON.stringify(qrData));
-        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${qrDataString}`;
-        
-        res.send(`
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticket d'entrée - ${row.code}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            background-color: #070913;
-            color: #ffffff;
-            font-family: 'Outfit', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .ticket-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 20, 147, 0.25);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 20, 147, 0.15);
-            backdrop-filter: blur(10px);
-        }
-        h1 {
-            font-size: 1.8rem;
-            margin: 0 0 10px 0;
-            letter-spacing: 2px;
-            color: #ff1493;
-            text-shadow: 0 0 10px rgba(255, 20, 147, 0.4);
-        }
-        .party-details {
-            font-size: 0.9rem;
-            color: #00d2ff;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 25px;
-        }
-        .qr-image {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            margin: 20px auto;
-            width: 200px;
-            height: 200px;
-            display: block;
-        }
-        .client-info {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: left;
-            font-size: 0.9rem;
-            margin-top: 20px;
-        }
-        .client-info p {
-            margin: 8px 0;
-            display: flex;
-            justify-content: space-between;
-        }
-        .client-info strong {
-            color: #ffbd59;
-        }
-        .badge-code {
-            background: rgba(255, 20, 147, 0.15);
-            color: #ff1493;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .footer-note {
-            font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 25px;
-        }
-    </style>
-</head>
-<body>
-    <div class="ticket-card">
-        <h1>PINKY PARTY</h1>
-        <div class="party-details">Pool Party • 1er Juillet 2026</div>
-        
-        <img class="qr-image" src="${qrImageUrl}" alt="QR Code d'entrée">
-        
-        <div class="client-info">
-            <p><span>Nom & Prénom:</span> <strong>${row.fullname}</strong></p>
-            <p><span>Téléphone:</span> <strong>${row.phone}</strong></p>
-            <p><span>Instagram:</span> <strong>${row.instagram}</strong></p>
-            <p><span>Nombre de Places:</span> <strong>${row.places}</strong></p>
-            <p><span>Code Unique:</span> <span class="badge-code">${row.code}</span></p>
-        </div>
-        
-        <div class="footer-note">Présentez ce QR code à l'entrée de la soirée.</div>
-    </div>
-</body>
-</html>
-        `);
+        // For now, return reservation data as JSON instead of HTML.
+        res.json({
+            code: row.code,
+            fullname: row.fullname,
+            phone: row.phone,
+            instagram: row.instagram,
+            places: row.places,
+            total: row.total,
+            status: row.status
+        });
     } catch (err) {
-        res.status(500).send("<h1 style='color: white; text-align: center; margin-top: 50px;'>Erreur serveur</h1>");
+        console.error("Erreur serveur ticket :", err.message);
+        res.status(500).json({ error: "Erreur serveur" });
     }
 });
+
 
 // Démarrage du serveur
 app.listen(PORT, () => {
